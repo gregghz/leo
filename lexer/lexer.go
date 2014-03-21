@@ -25,7 +25,12 @@ func Lexer(in io.Reader) token.TokenChan {
 
 				return lex(b)
 			case isNumberStart(b):
-				return number(string(b), in, tc)
+				b, err := ident(string(b), in, tc)
+				if err != nil {
+					return b, err
+				}
+				
+				return lex(b)
 			case b == '(':
 				tc <- token.OpenParen{}
 			case b == ')':
@@ -34,6 +39,17 @@ func Lexer(in io.Reader) token.TokenChan {
 				tc <- token.OpenCurly{}
 			case b == '}':
 				tc <- token.CloseCurly{}
+			case b == '=':
+				tc <- token.Assign{}
+			case b == ',':
+				tc <- token.Comma{}
+			case b == '.':
+				tc <- token.Dot{}
+			case b == '<':
+				b, err := lte(string(b), in, tc)
+				if err != nil {
+					return b, err
+				}
 			}
 			
 			return b, nil
@@ -69,6 +85,21 @@ func isAlpha(b byte) bool {
 
 func isNumber(b byte) bool {
 	return (b >= '0' && b <= '9')
+}
+
+func lte(sofar string, in io.Reader, tc token.TokenChan) (byte, error) {
+	b, err := nextByte(in)
+	if err != nil {
+		return b, err
+	}
+
+	if b == '=' {
+		tc <- token.Lte{}
+		return nextByte(in)
+	} else {
+		tc <- token.Lt{}
+		return b, nil
+	}
 }
 
 func ident(sofar string, in io.Reader, tc token.TokenChan) (byte, error) {
