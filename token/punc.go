@@ -62,6 +62,30 @@ func (Dot) String() string {
 	return "."
 }
 
+type Mod struct {
+	PuncToken
+}
+
+func (Mod) String() string {
+	return "%"
+}
+
+type Minus struct {
+	PuncToken
+}
+
+func (Minus) String() string {
+	return "-"
+}
+
+type Equals struct {
+	PuncToken
+}
+
+func (Equals) String() string {
+	return "=="
+}
+
 type Lte struct {
 	PuncToken
 }

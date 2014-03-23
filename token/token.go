@@ -33,6 +33,22 @@ type Token interface {
 	Value() string
 }
 
+type Unknown struct {
+	name, value string
+}
+
+func NewUnknown(name, value string) Unknown {
+	return Unknown{name, value}
+}
+
+func (u Unknown) String() string {
+	return u.name
+}
+
+func (u Unknown) Value() string {
+	return u.value
+}
+
 type Ident struct {
 	name, value string
 }
@@ -62,6 +78,22 @@ func (n Number) String() string {
 }
 
 func (n Number) Value() string {
+	return n.value
+}
+
+type String struct {
+	name, value string
+}
+
+func NewString(value string) String {
+	return String{"string", value}
+}
+
+func (n String) String() string {
+	return n.name
+}
+
+func (n String) Value() string {
 	return n.value
 }
 

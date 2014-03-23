@@ -25,11 +25,18 @@ func Lexer(in io.Reader) token.TokenChan {
 
 				return lex(b)
 			case isNumberStart(b):
-				b, err := ident(string(b), in, tc)
+				b, err := number(string(b), in, tc)
 				if err != nil {
 					return b, err
 				}
-				
+
+				return lex(b)
+			case b == '"':
+				b, err := str(string(b), in, tc)
+				if err != nil {
+					return b, err
+				}
+
 				return lex(b)
 			case b == '(':
 				tc <- token.OpenParen{}
@@ -40,16 +47,29 @@ func Lexer(in io.Reader) token.TokenChan {
 			case b == '}':
 				tc <- token.CloseCurly{}
 			case b == '=':
-				tc <- token.Assign{}
+				b, err := equals(string(b), in, tc)
+				if err != nil {
+					return b, err
+				}
+
+				return lex(b)
 			case b == ',':
 				tc <- token.Comma{}
 			case b == '.':
 				tc <- token.Dot{}
+			case b == '%':
+				tc <- token.Mod{}
+			case b == '-':
+				tc <- token.Minus{}
 			case b == '<':
 				b, err := lte(string(b), in, tc)
 				if err != nil {
 					return b, err
 				}
+			case b == ' ', b == '\t', b == '\n', b == '\r':
+				return b, nil
+			default:
+				tc <- token.NewUnknown("unknown", string(b))
 			}
 			
 			return b, nil
@@ -72,7 +92,7 @@ func Lexer(in io.Reader) token.TokenChan {
 }
 
 func isIdentStart(b byte) bool {
-	return isAlpha(b)
+	return isAlpha(b) || b == '_'
 }
 
 func isNumberStart(b byte) bool {
@@ -127,6 +147,35 @@ func number(sofar string, in io.Reader, tc token.TokenChan) (byte, error) {
 		return b, nil
 	} else {
 		return number(sofar + string(b), in, tc)
+	}
+}
+
+func str(sofar string, in io.Reader, tc token.TokenChan) (byte, error) {
+	b, err := nextByte(in)
+	if err != nil {
+		return b, err
+	}
+
+	if b == '"' {
+		tc <- token.NewString(sofar)
+		return nextByte(in)
+	} else {
+		return str(sofar + string(b), in , tc)
+	}
+}
+
+func equals(sofar string, in io.Reader, tc token.TokenChan) (byte, error) {
+	b, err := nextByte(in)
+	if err != nil {
+		return b, err
+	}
+
+	if b != '=' {
+		tc <- token.Assign{}
+		return b, nil
+	} else {
+		tc <- token.Equals{}
+		return nextByte(in)
 	}
 }
 
