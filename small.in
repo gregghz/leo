@@ -1,0 +1,4 @@
+package main
+
+def main(b Bool) Bool = true
+
