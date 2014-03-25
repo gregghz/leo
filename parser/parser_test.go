@@ -2,9 +2,9 @@ package parser
 
 import (
 	"../lexer"
+	"../node"
 	"strings"
 	"testing"
-	"fmt"
 )
 
 func TestParser(t *testing.T) {
@@ -24,9 +24,26 @@ func TestParser(t *testing.T) {
 	case *ParseTree:
 		if len(pt.Children()) != 3 {
 			t.Errorf("*ParseTree should have 3 children, found %d", len(pt.Children()))
+		} else {
+			switch pt.Children()[0].(type) {
+			case *node.PackageNode:
+			default:
+				t.Errorf("expected PackageNode")
+			}
+
+			switch pt.Children()[1].(type) {
+			case *node.ImportNode:
+			default:
+				t.Errorf("expected ImportNode")
+			}
+
+			switch pt.Children()[2].(type) {
+			case *node.FuncDef:
+				// check children
+			default:
+				t.Errorf("expected FuncDef")
+			}
 		}
-		a := fmt.Sprintf("%#v\n", pt)
-		println(a)
 	default:
 		t.Errorf("%#v", pt)
 		t.Errorf("found something besides a *ParseTree")

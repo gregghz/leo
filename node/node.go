@@ -3,7 +3,12 @@ package node
 import (
 	"../token"
 	"fmt"
+	"reflect"
 )
+
+func Eq(a, b Node) bool {
+	return reflect.DeepEqual(a, b)
+}
 
 type Node interface {
 	Children() []Node
@@ -53,6 +58,10 @@ func (i ImportNode) Go() string {
 
 type ParamListNode struct {
 	children []Node
+}
+
+func NewParamListNode(children []Node) *ParamListNode {
+	return &ParamListNode{children}
 }
 
 func (p ParamListNode) Children() []Node {
